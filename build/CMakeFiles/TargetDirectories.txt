@@ -1,3 +1,0 @@
-/home/link/work/classes/UCAS/并行处理/code/build/CMakeFiles/benchmark.dir
-/home/link/work/classes/UCAS/并行处理/code/build/CMakeFiles/edit_cache.dir
-/home/link/work/classes/UCAS/并行处理/code/build/CMakeFiles/rebuild_cache.dir
