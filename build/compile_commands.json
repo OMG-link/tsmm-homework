@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/link/work/classes/UCAS/并行处理/code/build",
+  "command": "/usr/bin/aarch64-linux-gnu-g++  -I/home/link/work/classes/UCAS/并行处理/code/include -O0 -g -std=gnu++17 -o CMakeFiles/benchmark.dir/src/benchmark.cpp.o -c /home/link/work/classes/UCAS/并行处理/code/src/benchmark.cpp",
+  "file": "/home/link/work/classes/UCAS/并行处理/code/src/benchmark.cpp",
+  "output": "CMakeFiles/benchmark.dir/src/benchmark.cpp.o"
+}
+]

@@ -1,0 +1,4 @@
+/tests/data/*.txt
+/build-debug
+/build-release
+/benchmark
