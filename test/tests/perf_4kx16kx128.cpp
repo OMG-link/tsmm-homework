@@ -1,8 +1,8 @@
 #include <chrono>
 #include <cstdio>
+#include <cstdlib>
 
-#include "dispatcher.hpp"
-#include "matrix.hpp"
+#include "matmul.hpp"
 
 void test_and_verify(const Matrix &a, const Matrix &b) {
     using namespace std::chrono;
@@ -19,12 +19,15 @@ void test_and_verify(const Matrix &a, const Matrix &b) {
     auto end_gen = high_resolution_clock::now();
     auto duration_gen = duration_cast<milliseconds>(end_gen - start_gen).count();
 
-    assert(c == ans);
-    printf("ok | optimized timer = %ldms, generic timer = %ldms\n", duration_opt, duration_gen);
+    if (c == ans) {
+        printf("ok | optimized timer = %ldms, generic timer = %ldms\n", duration_opt, duration_gen);
+    } else {
+        puts("wa | result is wrong");
+    }
 }
 
 int main() {
-    Matrix a = Matrix::from_file("./tests/data/4000x16000_1.txt");
-    Matrix b = Matrix::from_file("./tests/data/16000x128_1.txt");
+    Matrix a = Matrix::from_file("./test/data/4000x16000_1.txt");
+    Matrix b = Matrix::from_file("./test/data/16000x128_1.txt");
     test_and_verify(a, b);
 }

@@ -1,4 +1,4 @@
-/tests/data/*.txt
+/test/data/*.txt
+/build-vscode-plugin
 /build-debug
 /build-release
-/benchmark

@@ -4,7 +4,7 @@
 #include <fstream>
 #include <vector>
 
-#include "types.h"
+#include "definitions.h"
 
 enum StoreMode { ROW_MAJOR, COL_MAJOR };
 
@@ -12,7 +12,7 @@ class Matrix {
   public:
     Matrix() = delete;
     Matrix(size_t rows, size_t cols, StoreMode store_mode = ROW_MAJOR)
-        : rows_(rows), cols_(cols), data_(rows * cols), store_mode_(store_mode) {}
+        : store_mode_(store_mode), rows_(rows), cols_(cols), data_(rows * cols) {}
 
     f64 *data() { return data_.data(); }
     const f64 *data() const { return data_.data(); }
@@ -42,8 +42,8 @@ class Matrix {
         if (store_mode == store_mode_)
             return;
         Matrix result(rows_, cols_, store_mode);
-        for (int i = 0; i < rows_; i++) {
-            for (int j = 0; j < cols_; j++) {
+        for (size_t i = 0; i < rows_; i++) {
+            for (size_t j = 0; j < cols_; j++) {
                 result.at(i, j) = this->at(i, j);
             }
         }

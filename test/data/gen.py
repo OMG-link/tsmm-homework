@@ -12,7 +12,7 @@ def main():
         m = int(sys.argv[2])
         matrix_id = sys.argv[3]
     except ValueError:
-        print("参数 n 和 m 应该是整数")
+        print("Argument <n> and <m> should be integer")
         sys.exit(1)
 
     matrix = [[round(random.uniform(0.0, 100.0), 2) for _ in range(m)] for _ in range(n)]

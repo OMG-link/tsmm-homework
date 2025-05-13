@@ -1,10 +1,16 @@
-#pragma once
-#include "matrix.hpp"
+#include "matmul.hpp"
+#include "dispatcher.hpp"
+
+Matrix matmul(const Matrix &lhs, const Matrix &rhs) {
+    static MatMulDispatcher dispatcher;
+    assert(lhs.cols() == rhs.rows());
+    return dispatcher(lhs, rhs);
+}
 
 Matrix matmul_generic(const Matrix &lhs, const Matrix &rhs) {
-    const int m = static_cast<int>(lhs.rows());
-    const int n = static_cast<int>(rhs.cols());
-    const int k = static_cast<int>(lhs.cols());
+    const size_t m = lhs.rows();
+    const size_t n = rhs.cols();
+    const size_t k = lhs.cols();
     Matrix dst(m, n);
     for (size_t m_idx = 0; m_idx < m; ++m_idx) {
         for (size_t n_idx = 0; n_idx < n; ++n_idx) {
