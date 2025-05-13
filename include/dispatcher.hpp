@@ -16,11 +16,16 @@ class MatMulDispatcher {
         const int k = static_cast<int>(lhs.cols());
         const int n = static_cast<int>(rhs.cols());
 
+        Matrix lhs_rm = lhs;
+        Matrix rhs_cm = rhs;
+        lhs_rm.set_store_mode(ROW_MAJOR);
+        rhs_cm.set_store_mode(COL_MAJOR);
+
         Matrix dst(m, n);
 
         for (const auto &kernel : kernels_) {
             if (kernel->match(m, k, n)) {
-                kernel->compute(lhs.data(), rhs.data(), dst.data(), m, k, n);
+                kernel->compute(lhs_rm.data(), rhs_cm.data(), dst.data(), m, k, n);
                 return dst;
             }
         }

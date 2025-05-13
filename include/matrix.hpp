@@ -6,37 +6,49 @@
 
 #include "types.h"
 
-#ifndef ROW_MAJOR
-#ifndef COL_MAJOR
-#define ROW_MAJOR
-#endif
-#endif
+enum StoreMode { ROW_MAJOR, COL_MAJOR };
 
 class Matrix {
   public:
-    Matrix(size_t rows, size_t cols) : rows_(rows), cols_(cols), data_(rows * cols) {}
+    Matrix() = delete;
+    Matrix(size_t rows, size_t cols, StoreMode store_mode = ROW_MAJOR)
+        : rows_(rows), cols_(cols), data_(rows * cols), store_mode_(store_mode) {}
 
     f64 *data() { return data_.data(); }
     const f64 *data() const { return data_.data(); }
     size_t rows() const { return rows_; }
     size_t cols() const { return cols_; }
+    StoreMode store_mode() const { return store_mode_; }
 
     f64 &at(size_t x, size_t y) {
         assert(x <= rows_ && y <= cols_);
-#ifdef ROW_MAJOR
-        return data_[x * cols_ + y];
-#else
-        return data_[y * rows_ + x];
-#endif
+        if (store_mode_ == ROW_MAJOR) {
+            return data_[x * cols_ + y];
+        } else {
+            return data_[y * rows_ + x];
+        }
     }
 
     const f64 &at(size_t x, size_t y) const {
         assert(x <= rows_ && y <= cols_);
-#ifdef ROW_MAJOR
-        return data_[x * cols_ + y];
-#else
-        return data_[y * rows_ + x];
-#endif
+        if (store_mode_ == ROW_MAJOR) {
+            return data_[x * cols_ + y];
+        } else {
+            return data_[y * rows_ + x];
+        }
+    }
+
+    void set_store_mode(StoreMode store_mode) {
+        if (store_mode == store_mode_)
+            return;
+        Matrix result(rows_, cols_, store_mode);
+        for (int i = 0; i < rows_; i++) {
+            for (int j = 0; j < cols_; j++) {
+                result.at(i, j) = this->at(i, j);
+            }
+        }
+        *this = std::move(result);
+        return;
     }
 
     bool operator==(const Matrix &rhs) const {
@@ -71,6 +83,7 @@ class Matrix {
     }
 
   private:
+    StoreMode store_mode_;
     size_t rows_;
     size_t cols_;
     std::vector<f64> data_;
