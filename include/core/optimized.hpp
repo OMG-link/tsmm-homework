@@ -4,6 +4,6 @@
 class MatMulOptimizedKernel {
   public:
     virtual ~MatMulOptimizedKernel() = default;
-    virtual bool match(int M, int N, int K) const = 0;
-    virtual void compute(const f64 *A, const f64 *B, f64 *C, int M, int N, int K) const = 0;
+    virtual bool match(int m, int k, int n) const = 0;
+    virtual void compute(const f64 *lhs, const f64 *rhs, f64 *dst, int m, int k, int n) const = 0;
 };

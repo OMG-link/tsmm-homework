@@ -11,21 +11,21 @@ class MatMulDispatcher {
   public:
     MatMulDispatcher() { register_kernel<MatMul4000x16000x128>(); }
 
-    Matrix operator()(const Matrix &A, const Matrix &B) {
-        const int M = static_cast<int>(A.rows());
-        const int N = static_cast<int>(B.cols());
-        const int K = static_cast<int>(A.cols());
+    Matrix operator()(const Matrix &lhs, const Matrix &rhs) {
+        const int m = static_cast<int>(lhs.rows());
+        const int k = static_cast<int>(lhs.cols());
+        const int n = static_cast<int>(rhs.cols());
 
-        Matrix C(M, N);
+        Matrix dst(m, n);
 
         for (const auto &kernel : kernels_) {
-            if (kernel->match(M, N, K)) {
-                kernel->compute(A.data(), B.data(), C.data(), M, N, K);
-                return C;
+            if (kernel->match(m, k, n)) {
+                kernel->compute(lhs.data(), rhs.data(), dst.data(), m, k, n);
+                return dst;
             }
         }
 
-        return matmul_generic(A, B);
+        return matmul_generic(lhs, rhs);
     }
 
   private:
@@ -34,8 +34,8 @@ class MatMulDispatcher {
     std::vector<std::unique_ptr<MatMulOptimizedKernel>> kernels_;
 };
 
-Matrix matmul(const Matrix &A, const Matrix &B) {
+Matrix matmul(const Matrix &lhs, const Matrix &rhs) {
     static MatMulDispatcher dispatcher;
-    assert(A.cols() == B.rows());
-    return dispatcher(A, B);
+    assert(lhs.cols() == rhs.rows());
+    return dispatcher(lhs, rhs);
 }

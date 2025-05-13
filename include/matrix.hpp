@@ -26,7 +26,7 @@ class Matrix {
 #ifdef ROW_MAJOR
         return data_[x * cols_ + y];
 #else
-        return data[y * rows_ + x];
+        return data_[y * rows_ + x];
 #endif
     }
 
