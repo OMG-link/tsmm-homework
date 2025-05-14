@@ -5,9 +5,9 @@
 #include "core/kernel_base.hpp"
 #include "core/matmul.h"
 
-static const int M_BLK = 64;
-static const int K_BLK = 64;
-static const int N_BLK = 64;
+static const int M_BLK = 128;
+static const int K_BLK = 256;
+static const int N_BLK = 128;
 
 class MatMul4000x16000x128 : public MatmulKernelBase {
   public:

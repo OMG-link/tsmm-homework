@@ -1,10 +1,20 @@
 cmake_minimum_required(VERSION 3.10)
 project(Matmul)
 
+include(CheckCXXCompilerFlag)
 enable_testing()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+check_cxx_compiler_flag("-mavx512f" COMPILER_SUPPORTS_AVX512F)
+
+if(COMPILER_SUPPORTS_AVX512F)
+    message(STATUS "Compiler supports -mavx512f, enabling AVX-512")
+    add_compile_options(-mavx512f)
+else()
+    message(STATUS "Compiler does NOT support -mavx512f, skipping AVX-512")
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type")
