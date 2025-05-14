@@ -2,6 +2,9 @@
 
 #include <stdlib.h>
 #include <string.h>
+#ifdef __AVX512F__
+#include <immintrin.h>
+#endif
 
 #include "core/pack.h"
 
@@ -63,8 +66,26 @@ void matmul_submat(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n
     for (m_idx = 0; m_idx + DST_M_BLK <= m; m_idx += DST_M_BLK) {
         int n_idx;
         for (n_idx = 0; n_idx + DST_N_BLK <= n; n_idx += DST_N_BLK) {
-            // todo: rewrite using AVX512 intrinsic
+#ifdef __AVX512F__
+            __m512d out[DST_M_BLK];
+            for (int i = 0; i < DST_M_BLK; i++) {
+                out[i] = _mm512_loadu_pd(&dst[(m_idx + i) * dst_line_stride + n_idx]);
+            }
+            for (int k_idx = 0; k_idx < k; k_idx++) {
+                for (int i = 0; i < DST_M_BLK; i++) {
+                    double lhs_val = lhs[m_idx * k + k_idx * DST_M_BLK + i];
+                    __m512d lhs_broadcast = _mm512_set1_pd(lhs_val);
+                    const double *rhs_vec_ptr = &rhs[n_idx * k + k_idx * DST_N_BLK];
+                    __m512d rhs_vec = _mm512_loadu_pd(rhs_vec_ptr);
+                    out[i] = _mm512_fmadd_pd(lhs_broadcast, rhs_vec, out[i]);
+                }
+            }
+            for (int i = 0; i < DST_M_BLK; i++) {
+                _mm512_storeu_pd(&dst[(m_idx + i) * dst_line_stride + n_idx], out[i]);
+            }
+#else
             outer_product_kernel(DST_M_BLK, DST_N_BLK);
+#endif
         }
         {
             const int n_block = n - n_idx;

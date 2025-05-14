@@ -1,6 +1,6 @@
 #include "definitions.h"
 
-static const int DST_M_BLK = VLEN / sizeof(f64);
+static const int DST_M_BLK = 2 * VLEN / sizeof(f64);
 static const int DST_N_BLK = VLEN / sizeof(f64);
 
 #ifdef __cplusplus
