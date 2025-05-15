@@ -7,7 +7,6 @@
 void test_and_verify(const Matrix &a, const Matrix &b) {
     using namespace std::chrono;
 
-    // Timer - optimized
     auto start_opt = high_resolution_clock::now();
     Matrix c = matmul(a, b);
     auto end_opt = high_resolution_clock::now();
@@ -17,7 +16,6 @@ void test_and_verify(const Matrix &a, const Matrix &b) {
 }
 
 int main() {
-    Matrix a = Matrix::from_file("./test/data/4000x16000_1.txt");
-    Matrix b = Matrix::from_file("./test/data/16000x128_1.txt");
+    Matrix a(4000, 16000), b(16000, 128);
     test_and_verify(a, b);
 }
