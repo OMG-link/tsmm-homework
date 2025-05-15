@@ -4,7 +4,7 @@
 
 #include "matmul.hpp"
 
-void test_and_verify(const Matrix &a, const Matrix &b) {
+void test(const Matrix &a, const Matrix &b) {
     using namespace std::chrono;
 
     auto start_opt = high_resolution_clock::now();
@@ -17,5 +17,5 @@ void test_and_verify(const Matrix &a, const Matrix &b) {
 
 int main() {
     Matrix a(4000, 16000), b(16000, 128);
-    test_and_verify(a, b);
+    test(a, b);
 }
