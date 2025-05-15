@@ -9,8 +9,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 check_cxx_compiler_flag("-mavx512f" COMPILER_SUPPORTS_AVX512F)
 
+add_compile_options(-fmax-errors=3)
+
 if(COMPILER_SUPPORTS_AVX512F)
-    message(STATUS "Compiler supports -mavx512f, enabling AVX-512")
     add_compile_options(-mavx512f)
 else()
     message(STATUS "Compiler does NOT support -mavx512f, skipping AVX-512")
