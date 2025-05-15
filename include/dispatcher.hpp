@@ -16,16 +16,27 @@ class MatMulDispatcher {
         const int k = static_cast<int>(lhs.cols());
         const int n = static_cast<int>(rhs.cols());
 
-        Matrix lhs_rm = lhs;
-        Matrix rhs_rm = rhs;
-        lhs_rm.set_store_mode(ROW_MAJOR);
-        rhs_rm.set_store_mode(ROW_MAJOR);
+        const Matrix *lhs_used = &lhs;
+        const Matrix *rhs_used = &rhs;
+
+        // copy matrix only when necessary
+        Matrix lhs_rm(0, 0), rhs_rm(0, 0);
+        if (lhs.store_mode() != ROW_MAJOR) {
+            lhs_rm = lhs;
+            lhs_rm.set_store_mode(ROW_MAJOR);
+            lhs_used = &lhs_rm;
+        }
+        if (rhs.store_mode() != ROW_MAJOR) {
+            rhs_rm = rhs;
+            rhs_rm.set_store_mode(ROW_MAJOR);
+            rhs_used = &rhs_rm;
+        }
 
         Matrix dst(m, n, ROW_MAJOR);
 
         for (const auto &kernel : kernels_) {
             if (kernel->match(m, k, n)) {
-                kernel->compute(dst.data(), lhs_rm.data(), rhs_rm.data(), m, k, n);
+                kernel->compute(dst.data(), lhs_used->data(), rhs_used->data(), m, k, n);
                 return dst;
             }
         }
