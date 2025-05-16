@@ -1,6 +1,9 @@
 #pragma once
 #include <cassert>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <vector>
 
@@ -11,11 +14,52 @@ enum StoreMode { ROW_MAJOR, COL_MAJOR };
 class Matrix {
   public:
     Matrix() = delete;
+    ~Matrix() { free(data_); }
+    Matrix(const Matrix &rhs) : store_mode_(rhs.store_mode_), rows_(rhs.rows_), cols_(rhs.cols_), data_(nullptr) {
+        if (posix_memalign((void **)&data_, 64, (rows_ * cols_) * sizeof(f64)) != 0) {
+            perror("posix_memalign failed");
+            exit(1);
+        }
+        memcpy(data_, rhs.data_, (rows_ * cols_) * sizeof(f64));
+    }
+    Matrix(Matrix &&rhs) : store_mode_(rhs.store_mode_), rows_(rhs.rows_), cols_(rhs.cols_), data_(rhs.data_) {
+        rhs.rows_ = 0;
+        rhs.cols_ = 0;
+        rhs.data_ = nullptr;
+    }
+    Matrix &operator=(const Matrix &rhs) {
+        free(data_);
+        data_ = nullptr;
+        store_mode_ = rhs.store_mode_;
+        rows_ = rhs.rows_;
+        cols_ = rhs.cols_;
+        if (posix_memalign((void **)&data_, 64, (rows_ * cols_) * sizeof(f64)) != 0) {
+            perror("posix_memalign failed");
+            exit(1);
+        }
+        memcpy(data_, rhs.data_, (rows_ * cols_) * sizeof(f64));
+        return *this;
+    }
+    Matrix &operator=(Matrix &&rhs) {
+        free(data_);
+        data_ = nullptr;
+        store_mode_ = rhs.store_mode_;
+        rows_ = rhs.rows_;
+        cols_ = rhs.cols_;
+        data_ = rhs.data_;
+        rhs.data_ = nullptr;
+        return *this;
+    }
     Matrix(size_t rows, size_t cols, StoreMode store_mode = ROW_MAJOR)
-        : store_mode_(store_mode), rows_(rows), cols_(cols), data_(rows * cols) {}
+        : store_mode_(store_mode), rows_(rows), cols_(cols), data_(nullptr) {
+        if (posix_memalign((void **)&data_, 64, (rows * cols) * sizeof(f64)) != 0) {
+            perror("posix_memalign failed");
+            exit(1);
+        }
+    }
 
-    f64 *data() { return data_.data(); }
-    const f64 *data() const { return data_.data(); }
+    f64 *data() { return data_; }
+    const f64 *data() const { return data_; }
     size_t rows() const { return rows_; }
     size_t cols() const { return cols_; }
     StoreMode store_mode() const { return store_mode_; }
@@ -86,5 +130,5 @@ class Matrix {
     StoreMode store_mode_;
     size_t rows_;
     size_t cols_;
-    std::vector<f64> data_;
+    f64 *data_;
 };
