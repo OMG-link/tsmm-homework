@@ -5,36 +5,24 @@
 #include "core/matmul.h"
 #include "matrix.hpp"
 
-static inline int min(int a, int b) { return a < b ? a : b; }
-
 void test(int m, int k, int n) {
     using namespace std::chrono;
 
-    f64 *lhs, *rhs, *dst;
+    f64 *dst = (f64 *)malloc_aligned(m * n * sizeof(f64), 64);
+    f64 *lhs = (f64 *)malloc_aligned(m * k * sizeof(f64), 64);
+    f64 *rhs = (f64 *)malloc_aligned(k * n * sizeof(f64), 64);
 
-    if (posix_memalign((void **)&dst, 64, m * n * sizeof(f64)) != 0) {
-        perror("posix_memalign failed for dst");
-        exit(1);
-    }
-    if (posix_memalign((void **)&lhs, 64, m * k * sizeof(f64)) != 0) {
-        perror("posix_memalign failed for lhs");
-        exit(1);
-    }
-    if (posix_memalign((void **)&rhs, 64, k * n * sizeof(f64)) != 0) {
-        perror("posix_memalign failed for rhs");
-        exit(1);
-    }
+    const int M_BLK = 128;
+    const int K_BLK = 256;
+    const int N_BLK = 128;
 
     auto start_submatmul = high_resolution_clock::now();
-    int M_BLK = 128;
-    int K_BLK = 256;
-    int N_BLK = 128;
     for (int m_idx = 0, m_block; m_idx < m; m_idx += m_block) {
-        m_block = min(M_BLK, m - m_idx);
+        m_block = min_int(M_BLK, m - m_idx);
         for (int n_idx = 0, n_block; n_idx < n; n_idx += n_block) {
-            n_block = min(N_BLK, n - n_idx);
+            n_block = min_int(N_BLK, n - n_idx);
             for (int k_idx = 0, k_block; k_idx < k; k_idx += k_block) {
-                k_block = min(K_BLK, k - k_idx);
+                k_block = min_int(K_BLK, k - k_idx);
                 const f64 *lhs_submat = lhs + m_idx * k + k_idx * m_block;
                 const f64 *rhs_submat = rhs + n_idx * k + k_idx * n_block;
                 f64 *dst_submat = dst + m_idx * n + n_idx;

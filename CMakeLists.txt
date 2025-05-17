@@ -26,7 +26,8 @@ set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -Wall -Wextra -fsanitize=undefined,address")
 set(CMAKE_C_FLAGS_RELEASE   "-O3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
-file(GLOB LIBMATMUL_SOURCES "src/matmul.cpp" "src/core/matmul.c" "src/core/pack.c")
+file(GLOB LIBMATMUL_SOURCES "src/matmul.cpp" "src/utils.c" "src/core/matmul.c" "src/core/pack.c" "src/core/kernels/*.cpp")
+
 add_library(libmatmul STATIC ${LIBMATMUL_SOURCES})
 target_include_directories(libmatmul PUBLIC include)
 

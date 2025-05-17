@@ -8,11 +8,11 @@
 void test(const Matrix &a, const Matrix &b) {
     using namespace std::chrono;
 
-    f64 *a_packed = (f64 *)malloc(a.rows() * a.cols() * sizeof(f64));
-    f64 *b_packed = (f64 *)malloc(b.rows() * b.cols() * sizeof(f64));
+    f64 *a_packed = (f64 *)malloc_aligned(a.rows() * a.cols() * sizeof(f64), 64);
+    f64 *b_packed = (f64 *)malloc_aligned(b.rows() * b.cols() * sizeof(f64), 64);
 
     auto start_lhs = high_resolution_clock::now();
-    pack_matrix_lhs(a_packed, a.data(), a.rows(), a.cols(), 256, 256);
+    pack_matrix_lhs(a_packed, a.data(), a.rows(), a.cols(), 128, 256);
     auto end_lhs = high_resolution_clock::now();
     auto duration_lhs = duration_cast<milliseconds>(end_lhs - start_lhs).count();
 

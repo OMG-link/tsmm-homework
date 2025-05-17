@@ -13,8 +13,6 @@ static const int PREFETCH_ITER = 4;
 static const int RHS_PREFETCH_DIST = PREFETCH_ITER * DST_N_BLK;
 static const int LHS_PREFETCH_DIST = PREFETCH_ITER * DST_M_BLK;
 
-static inline int min(int a, int b) { return a < b ? a : b; }
-
 // Compute dst = lhs * rhs using blocking strategy.
 void matmul_block(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n, const int M_BLK, const int K_BLK,
                   const int N_BLK) {
@@ -36,11 +34,11 @@ void matmul_block(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n,
 
     // do mat mul
     for (int m_idx = 0, m_block; m_idx < m; m_idx += m_block) {
-        m_block = min(M_BLK, m - m_idx);
+        m_block = min_int(M_BLK, m - m_idx);
         for (int n_idx = 0, n_block; n_idx < n; n_idx += n_block) {
-            n_block = min(N_BLK, n - n_idx);
+            n_block = min_int(N_BLK, n - n_idx);
             for (int k_idx = 0, k_block; k_idx < k; k_idx += k_block) {
-                k_block = min(K_BLK, k - k_idx);
+                k_block = min_int(K_BLK, k - k_idx);
                 const f64 *lhs_submat = lhs_packed + m_idx * k + k_idx * m_block;
                 const f64 *rhs_submat = rhs_packed + n_idx * k + k_idx * n_block;
                 f64 *dst_submat = dst + m_idx * n + n_idx;
@@ -92,27 +90,27 @@ void matmul_submat(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n
             load_out(4, 1), load_out(5, 1), load_out(6, 1), load_out(7, 1);
 #undef load_out
             for (int k_idx = 0; k_idx < k; k_idx++) {
+#define fma(i, j) out##i##j = _mm512_fmadd_pd(lhs_vbc##i, rhs_vec##j, out##i##j)
                 __m512d rhs_vec0 = _mm512_loadu_pd(rhs_vec_ptr + 0);
                 __m512d rhs_vec1 = _mm512_loadu_pd(rhs_vec_ptr + 8);
                 __m512d lhs_vbc0 = _mm512_set1_pd(lhs_val_ptr[0]);
                 __m512d lhs_vbc1 = _mm512_set1_pd(lhs_val_ptr[1]);
                 __m512d lhs_vbc2 = _mm512_set1_pd(lhs_val_ptr[2]);
                 __m512d lhs_vbc3 = _mm512_set1_pd(lhs_val_ptr[3]);
+                fma(0, 0), fma(1, 0), fma(2, 0), fma(3, 0);
+                fma(0, 1), fma(1, 1), fma(2, 1), fma(3, 1);
                 __m512d lhs_vbc4 = _mm512_set1_pd(lhs_val_ptr[4]);
                 __m512d lhs_vbc5 = _mm512_set1_pd(lhs_val_ptr[5]);
                 __m512d lhs_vbc6 = _mm512_set1_pd(lhs_val_ptr[6]);
                 __m512d lhs_vbc7 = _mm512_set1_pd(lhs_val_ptr[7]);
+                fma(4, 0), fma(5, 0), fma(6, 0), fma(7, 0);
+                fma(4, 1), fma(5, 1), fma(6, 1), fma(7, 1);
                 _mm_prefetch(rhs_vec_ptr + RHS_PREFETCH_DIST + 0, _MM_HINT_T0);
                 _mm_prefetch(rhs_vec_ptr + RHS_PREFETCH_DIST + 8, _MM_HINT_T0);
                 _mm_prefetch(lhs_val_ptr + LHS_PREFETCH_DIST + 0, _MM_HINT_T0);
-#define fma(i, j) out##i##j = _mm512_fmadd_pd(lhs_vbc##i, rhs_vec##j, out##i##j)
-                fma(0, 0), fma(1, 0), fma(2, 0), fma(3, 0);
-                fma(4, 0), fma(5, 0), fma(6, 0), fma(7, 0);
-                fma(0, 1), fma(1, 1), fma(2, 1), fma(3, 1);
-                fma(4, 1), fma(5, 1), fma(6, 1), fma(7, 1);
-#undef fma
                 lhs_val_ptr += DST_M_BLK;
                 rhs_vec_ptr += DST_N_BLK;
+#undef fma
             }
 #define store_out(i, j) _mm512_storeu_pd(dst_ptr + i * dst_line_stride + j * 8, out##i##j)
             store_out(0, 0), store_out(1, 0), store_out(2, 0), store_out(3, 0);

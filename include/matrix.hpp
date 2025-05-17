@@ -7,7 +7,7 @@
 #include <fstream>
 #include <vector>
 
-#include "definitions.h"
+#include "utils.h"
 
 enum StoreMode { ROW_MAJOR, COL_MAJOR };
 
