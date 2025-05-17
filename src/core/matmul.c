@@ -122,18 +122,18 @@ void matmul_submat(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n
             outer_product_kernel(DST_M_BLK, DST_N_BLK);
 #endif
         }
-        {
+        if (n - n_idx > 0) {
             const int n_block = n - n_idx;
             outer_product_kernel(DST_M_BLK, n_block);
         }
     }
-    {
+    if (m - m_idx > 0) {
         const int m_block = m - m_idx;
         int n_idx;
         for (n_idx = 0; n_idx + DST_N_BLK <= n; n_idx += DST_N_BLK) {
             outer_product_kernel(m_block, DST_N_BLK);
         }
-        {
+        if (n - n_idx > 0) {
             const int n_block = n - n_idx;
             outer_product_kernel(m_block, n_block);
         }

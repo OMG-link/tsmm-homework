@@ -18,7 +18,7 @@ static void reorder_matrix_lhs(f64 *dst, const f64 *src, int m, int k, int src_l
     for (m_idx = 0; m_idx + M_BLK <= m; m_idx += M_BLK) {
         assert(M_BLK == 8);
         const int K_BLK = 8;
-        int k_idx;
+        int k_idx = 0;
         const f64 *src_l0 = src + (m_idx + 0) * src_line_stride;
         const f64 *src_l1 = src + (m_idx + 1) * src_line_stride;
         const f64 *src_l2 = src + (m_idx + 2) * src_line_stride;
