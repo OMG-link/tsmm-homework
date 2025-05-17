@@ -28,6 +28,7 @@ Matrix a = Matrix::from_file("./test/data/4000x16000_1.txt");
 目前包含的功能测试：
 - `func_matmul_block`: 测试分块矩阵乘法的实现是否正确。
 - `func_pack`: 测试data packing的实现是否正确。
+- `func_kernel_4000x16000x128`: 测试针对 $4000 \times 16000 \times 128$ 规模的矩阵乘法的优化是否正确。
 
 ### 性能测试
 
@@ -36,4 +37,6 @@ Matrix a = Matrix::from_file("./test/data/4000x16000_1.txt");
 测试程序会将结果输出到标准输出。默认情况下， `ctest` 将它们重定向到了 `build-release/Testing/Temporary/LastTest.log` ，你可以在这里查看性能评测的结果。
 
 目前包含的性能测试：
-- `perf_4kx16kx128`: $4000 \times 16000 \times 128$ 规模的矩阵乘法。
+- `perf_pack_4kx16kx128`: 对 $4000 \times 16000 \times 128$ 规模的矩阵进行packing。
+- `perf_submatmul_4kx16kx128`: 对 $4000 \times 16000 \times 128$ 规模的计算矩阵乘法（省略packing）。
+- `perf_matmul_4kx16kx128`: $4000 \times 16000 \times 128$ 规模的矩阵乘法（含packing）。
