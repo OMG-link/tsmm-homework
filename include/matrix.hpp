@@ -46,6 +46,7 @@ class Matrix {
     Matrix(size_t rows, size_t cols, StoreMode store_mode = ROW_MAJOR)
         : store_mode_(store_mode), rows_(rows), cols_(cols), data_(nullptr) {
         data_ = (f64 *)malloc_aligned((rows_ * cols_) * sizeof(f64), 64);
+        memset(data_, 0, (rows_ * cols_) * sizeof(f64));
     }
 
     f64 *data() { return data_; }

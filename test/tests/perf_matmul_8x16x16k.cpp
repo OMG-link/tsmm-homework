@@ -2,13 +2,13 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "core/kernels/4000x16000x128.hpp"
+#include "core/kernels/8x16x16000.hpp"
 #include "matmul.hpp"
 
 void test(const Matrix &a, const Matrix &b) {
     using namespace std::chrono;
 
-    MatMul4000x16000x128 kernel;
+    MatMul8x16x16000 kernel;
     Matrix c(a.rows(), b.cols());
 
     auto start_opt = high_resolution_clock::now();
@@ -26,6 +26,6 @@ void test(const Matrix &a, const Matrix &b) {
 }
 
 int main() {
-    Matrix a(4000, 16000), b(16000, 128);
+    Matrix a(8, 16), b(16, 16000);
     test(a, b);
 }

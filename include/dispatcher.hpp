@@ -4,12 +4,16 @@
 
 #include "core/kernel_base.hpp"
 #include "core/kernels/4000x16000x128.hpp"
+#include "core/kernels/8x16x16000.hpp"
 #include "matmul.hpp"
 #include "matrix.hpp"
 
 class MatMulDispatcher {
   public:
-    MatMulDispatcher() { register_kernel<MatMul4000x16000x128>(); }
+    MatMulDispatcher() {
+        register_kernel<MatMul4000x16000x128>();
+        register_kernel<MatMul8x16x16000>();
+    }
 
     Matrix operator()(const Matrix &lhs, const Matrix &rhs) {
         const int m = static_cast<int>(lhs.rows());

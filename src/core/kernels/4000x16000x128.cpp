@@ -7,6 +7,7 @@
 #include <immintrin.h>
 #endif
 
+#include "core/matmul.h"
 #include "core/pack.h"
 
 static const int M = 4000;
@@ -80,25 +81,7 @@ static inline void _matmul_submat(f64 *dst, const f64 *lhs, const f64 *rhs, int 
             store_out(4, 1), store_out(5, 1), store_out(6, 1), store_out(7, 1);
 #undef store_out
 #else
-            f64 out[DST_M_BLK * DST_N_BLK];
-            for (int i = 0; i < DST_M_BLK; i++) {
-                for (int j = 0; j < DST_N_BLK; j++) {
-                    out[i * DST_N_BLK + j] = dst[(m_idx + i) * dst_line_stride + (n_idx + j)];
-                }
-            }
-            for (int k_idx = 0; k_idx < k; k_idx++) {
-                for (int i = 0; i < DST_M_BLK; i++) {
-                    for (int j = 0; j < DST_N_BLK; j++) {
-                        out[i * DST_N_BLK + j] +=
-                            lhs[(m_idx + i) * lhs_line_stride + k_idx] * rhs[n_idx * k + k_idx * DST_N_BLK + j];
-                    }
-                }
-            }
-            for (int i = 0; i < DST_M_BLK; i++) {
-                for (int j = 0; j < DST_N_BLK; j++) {
-                    dst[(m_idx + i) * dst_line_stride + (n_idx + j)] = out[i * DST_N_BLK + j];
-                }
-            }
+            outer_product_kernel(DST_M_BLK, DST_N_BLK);
 #endif
         }
     }

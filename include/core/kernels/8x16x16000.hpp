@@ -4,9 +4,9 @@
 
 #include "core/kernel_base.hpp"
 
-class MatMul4000x16000x128 : public MatmulKernelBase {
+class MatMul8x16x16000 : public MatmulKernelBase {
   public:
-    bool match(int m, int k, int n) const override { return m == 4000 && k == 16000 && n == 128; }
+    bool match(int m, int k, int n) const override { return m == 8 && k == 16 && n == 16000; }
 
     void compute(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n) const override;
 };
