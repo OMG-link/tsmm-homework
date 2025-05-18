@@ -19,6 +19,8 @@ void matmul_block(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n,
     // pack
     f64 *lhs_packed = (f64 *)malloc_aligned((m * k + LHS_PREFETCH_DIST) * sizeof(f64), 64);
     f64 *rhs_packed = (f64 *)malloc_aligned((k * n + RHS_PREFETCH_DIST) * sizeof(f64), 64);
+    pack_matrix_lhs(lhs_packed, lhs, m, k, M_BLK, K_BLK);
+    pack_matrix_rhs(rhs_packed, rhs, k, n, K_BLK, N_BLK);
 
     // clean dst
     memset(dst, 0, m * n * sizeof(f64));
