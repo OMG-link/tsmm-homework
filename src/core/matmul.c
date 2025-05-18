@@ -70,9 +70,9 @@ void matmul_submat(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n
         int n_idx;
         for (n_idx = 0; n_idx + DST_N_BLK <= n; n_idx += DST_N_BLK) {
 #ifdef __AVX512F__
-            const double *lhs_val_ptr = lhs + m_idx * k;
-            const double *rhs_vec_ptr = rhs + n_idx * k;
-            double *dst_ptr = dst + m_idx * dst_line_stride + n_idx;
+            const f64 *lhs_val_ptr = lhs + m_idx * k;
+            const f64 *rhs_vec_ptr = rhs + n_idx * k;
+            f64 *dst_ptr = dst + m_idx * dst_line_stride + n_idx;
             __m512d out00, out10, out20, out30, out40, out50, out60, out70;
             __m512d out01, out11, out21, out31, out41, out51, out61, out71;
 
