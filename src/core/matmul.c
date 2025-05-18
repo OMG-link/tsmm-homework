@@ -17,17 +17,8 @@ static const int LHS_PREFETCH_DIST = PREFETCH_ITER * DST_M_BLK;
 void matmul_block(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n, const int M_BLK, const int K_BLK,
                   const int N_BLK) {
     // pack
-    f64 *lhs_packed, *rhs_packed;
-    if (posix_memalign((void **)&lhs_packed, 64, (m * k + LHS_PREFETCH_DIST) * sizeof(f64)) != 0) {
-        perror("posix_memalign failed");
-        exit(1);
-    }
-    if (posix_memalign((void **)&rhs_packed, 64, (k * n + RHS_PREFETCH_DIST) * sizeof(f64)) != 0) {
-        perror("posix_memalign failed");
-        exit(1);
-    }
-    pack_matrix_lhs(lhs_packed, lhs, m, k, M_BLK, K_BLK);
-    pack_matrix_rhs(rhs_packed, rhs, k, n, K_BLK, N_BLK);
+    f64 *lhs_packed = (f64 *)malloc_aligned((m * k + LHS_PREFETCH_DIST) * sizeof(f64), 64);
+    f64 *rhs_packed = (f64 *)malloc_aligned((k * n + RHS_PREFETCH_DIST) * sizeof(f64), 64);
 
     // clean dst
     memset(dst, 0, m * n * sizeof(f64));

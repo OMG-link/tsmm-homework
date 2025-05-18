@@ -1,7 +1,6 @@
 #pragma once
 #include <cassert>
 #include <cmath>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -16,10 +15,7 @@ class Matrix {
     Matrix() = delete;
     ~Matrix() { free(data_); }
     Matrix(const Matrix &rhs) : store_mode_(rhs.store_mode_), rows_(rhs.rows_), cols_(rhs.cols_), data_(nullptr) {
-        if (posix_memalign((void **)&data_, 64, (rows_ * cols_) * sizeof(f64)) != 0) {
-            perror("posix_memalign failed");
-            exit(1);
-        }
+        data_ = (f64 *)malloc_aligned((rows_ * cols_) * sizeof(f64), 64);
         memcpy(data_, rhs.data_, (rows_ * cols_) * sizeof(f64));
     }
     Matrix(Matrix &&rhs) : store_mode_(rhs.store_mode_), rows_(rhs.rows_), cols_(rhs.cols_), data_(rhs.data_) {
@@ -33,10 +29,7 @@ class Matrix {
         store_mode_ = rhs.store_mode_;
         rows_ = rhs.rows_;
         cols_ = rhs.cols_;
-        if (posix_memalign((void **)&data_, 64, (rows_ * cols_) * sizeof(f64)) != 0) {
-            perror("posix_memalign failed");
-            exit(1);
-        }
+        data_ = (f64 *)malloc_aligned((rows_ * cols_) * sizeof(f64), 64);
         memcpy(data_, rhs.data_, (rows_ * cols_) * sizeof(f64));
         return *this;
     }
@@ -52,10 +45,7 @@ class Matrix {
     }
     Matrix(size_t rows, size_t cols, StoreMode store_mode = ROW_MAJOR)
         : store_mode_(store_mode), rows_(rows), cols_(cols), data_(nullptr) {
-        if (posix_memalign((void **)&data_, 64, (rows * cols) * sizeof(f64)) != 0) {
-            perror("posix_memalign failed");
-            exit(1);
-        }
+        data_ = (f64 *)malloc_aligned((rows_ * cols_) * sizeof(f64), 64);
     }
 
     f64 *data() { return data_; }
