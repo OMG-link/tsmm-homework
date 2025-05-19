@@ -6,6 +6,9 @@
 #ifdef __AVX512F__
 #include <immintrin.h>
 #endif
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include "core/matmul.h"
 #include "core/pack.h"
@@ -95,10 +98,13 @@ static inline void _matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, con
 
     memset(dst, 0, m * n * sizeof(f64));
 
-    for (int m_idx = 0, m_block; m_idx < m; m_idx += m_block) {
-        m_block = min_int(M_BLK, m - m_idx);
-        for (int n_idx = 0, n_block; n_idx < n; n_idx += n_block) {
-            n_block = min_int(N_BLK, n - n_idx);
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2) schedule(dynamic)
+#endif
+    for (int m_idx = 0; m_idx < m; m_idx += M_BLK) {
+        for (int n_idx = 0; n_idx < n; n_idx += N_BLK) {
+            int m_block = min_int(M_BLK, m - m_idx);
+            int n_block = min_int(N_BLK, n - n_idx);
             for (int k_idx = 0, k_block; k_idx < k; k_idx += k_block) {
                 k_block = min_int(K_BLK, k - k_idx);
                 const f64 *lhs_submat = lhs + m_idx * k + k_idx;
