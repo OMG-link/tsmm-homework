@@ -1,7 +1,7 @@
 #include "utils.h"
 
-static const int DST_M_BLK = VLEN / sizeof(f64);     // must be a multiple of VLEN / sizeof(f64)
-static const int DST_N_BLK = 2 * VLEN / sizeof(f64); // must be a multiple of VLEN / sizeof(f64)
+static const int OPK_M_BLK = VLEN / sizeof(f64);     // must be a multiple of VLEN / sizeof(f64)
+static const int OPK_N_BLK = 2 * VLEN / sizeof(f64); // must be a multiple of VLEN / sizeof(f64)
 
 #ifdef __cplusplus
 extern "C" {

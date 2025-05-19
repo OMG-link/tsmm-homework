@@ -10,8 +10,8 @@
 #include "core/pack.h"
 
 static const int PREFETCH_ITER = 4;
-static const int RHS_PREFETCH_DIST = PREFETCH_ITER * DST_N_BLK;
-static const int LHS_PREFETCH_DIST = PREFETCH_ITER * DST_M_BLK;
+static const int RHS_PREFETCH_DIST = PREFETCH_ITER * OPK_N_BLK;
+static const int LHS_PREFETCH_DIST = PREFETCH_ITER * OPK_M_BLK;
 
 // Compute dst = lhs * rhs using blocking strategy.
 void matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k, int n,
@@ -47,9 +47,9 @@ void matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRIC
 void matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k, int n,
                    int dst_line_stride) {
     int m_idx;
-    for (m_idx = 0; m_idx + DST_M_BLK <= m; m_idx += DST_M_BLK) {
+    for (m_idx = 0; m_idx + OPK_M_BLK <= m; m_idx += OPK_M_BLK) {
         int n_idx;
-        for (n_idx = 0; n_idx + DST_N_BLK <= n; n_idx += DST_N_BLK) {
+        for (n_idx = 0; n_idx + OPK_N_BLK <= n; n_idx += OPK_N_BLK) {
 #ifdef __AVX512F__
             const f64 *lhs_val_ptr = lhs + m_idx * k;
             const f64 *rhs_vec_ptr = rhs + n_idx * k;
@@ -82,8 +82,8 @@ void matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRI
                 _mm_prefetch(rhs_vec_ptr + RHS_PREFETCH_DIST + 0, _MM_HINT_T0);
                 _mm_prefetch(rhs_vec_ptr + RHS_PREFETCH_DIST + 8, _MM_HINT_T0);
                 _mm_prefetch(lhs_val_ptr + LHS_PREFETCH_DIST + 0, _MM_HINT_T0);
-                lhs_val_ptr += DST_M_BLK;
-                rhs_vec_ptr += DST_N_BLK;
+                lhs_val_ptr += OPK_M_BLK;
+                rhs_vec_ptr += OPK_N_BLK;
 #undef fma
             }
 #define store_out(i, j) _mm512_storeu_pd(dst_ptr + i * dst_line_stride + j * 8, out##i##j)
@@ -93,19 +93,19 @@ void matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRI
             store_out(4, 1), store_out(5, 1), store_out(6, 1), store_out(7, 1);
 #undef store_out
 #else
-            outer_product_kernel(DST_M_BLK, DST_N_BLK);
+            outer_product_kernel(OPK_M_BLK, OPK_N_BLK);
 #endif
         }
         if (n - n_idx > 0) {
             const int n_block = n - n_idx;
-            outer_product_kernel(DST_M_BLK, n_block);
+            outer_product_kernel(OPK_M_BLK, n_block);
         }
     }
     if (m - m_idx > 0) {
         const int m_block = m - m_idx;
         int n_idx;
-        for (n_idx = 0; n_idx + DST_N_BLK <= n; n_idx += DST_N_BLK) {
-            outer_product_kernel(m_block, DST_N_BLK);
+        for (n_idx = 0; n_idx + OPK_N_BLK <= n; n_idx += OPK_N_BLK) {
+            outer_product_kernel(m_block, OPK_N_BLK);
         }
         if (n - n_idx > 0) {
             const int n_block = n - n_idx;

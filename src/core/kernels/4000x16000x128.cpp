@@ -19,15 +19,15 @@ static const int K_BLK = 512;
 static const int N_BLK = 128;
 
 static const int PREFETCH_ITER = 8;
-static const int RHS_PREFETCH_DIST = PREFETCH_ITER * DST_N_BLK;
+static const int RHS_PREFETCH_DIST = PREFETCH_ITER * OPK_N_BLK;
 static const int LHS_PREFETCH_DIST = PREFETCH_ITER;
 
 static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
                                   int n, int lhs_line_stride, int dst_line_stride) {
-    assert(m % DST_M_BLK == 0);
-    assert(n % DST_N_BLK == 0);
-    for (int m_idx = 0; m_idx < m; m_idx += DST_M_BLK) {
-        for (int n_idx = 0; n_idx < n; n_idx += DST_N_BLK) {
+    assert(m % OPK_M_BLK == 0);
+    assert(n % OPK_N_BLK == 0);
+    for (int m_idx = 0; m_idx < m; m_idx += OPK_M_BLK) {
+        for (int n_idx = 0; n_idx < n; n_idx += OPK_N_BLK) {
 #ifdef __AVX512F__
             const f64 *lhs_val0_ptr = lhs + m_idx * lhs_line_stride;
             const f64 *rhs_vec_ptr = rhs + n_idx * k;
@@ -71,7 +71,7 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
                     _mm_prefetch(lhs_val0_ptr + 7 * lhs_line_stride + LHS_PREFETCH_DIST, _MM_HINT_T0);
                 }
                 lhs_val0_ptr += 1;
-                rhs_vec_ptr += DST_N_BLK;
+                rhs_vec_ptr += OPK_N_BLK;
 #undef fma
             }
 #define store_out(i, j) _mm512_storeu_pd(dst_ptr + i * dst_line_stride + j * 8, out##i##j)
@@ -81,7 +81,7 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
             store_out(4, 1), store_out(5, 1), store_out(6, 1), store_out(7, 1);
 #undef store_out
 #else
-            outer_product_kernel(DST_M_BLK, DST_N_BLK);
+            outer_product_kernel(OPK_M_BLK, OPK_N_BLK);
 #endif
         }
     }

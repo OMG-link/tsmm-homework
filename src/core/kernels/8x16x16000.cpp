@@ -11,7 +11,7 @@
 #include "core/pack.h"
 
 static inline void _reorder_matrix_lhs(f64 *RESTRICT dst, const f64 *RESTRICT src, int m, int k, int src_line_stride) {
-    const int M_BLK = DST_M_BLK;
+    const int M_BLK = OPK_M_BLK;
     f64 *dst_ptr = dst;
 
 #ifdef __AVX512F__
@@ -150,12 +150,12 @@ static const int K_BLK = 16;
 static const int N_BLK = 4000;
 
 static const int PREFETCH_ITER = 4;
-static const int RHS_PREFETCH_DIST = PREFETCH_ITER * DST_N_BLK;
+static const int RHS_PREFETCH_DIST = PREFETCH_ITER * OPK_N_BLK;
 
 static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
                                   int n, int dst_line_stride) {
-    for (int m_idx = 0; m_idx < m; m_idx += DST_M_BLK) {
-        for (int n_idx = 0; n_idx < n; n_idx += DST_N_BLK) {
+    for (int m_idx = 0; m_idx < m; m_idx += OPK_M_BLK) {
+        for (int n_idx = 0; n_idx < n; n_idx += OPK_N_BLK) {
 #ifdef __AVX512F__
             const f64 *lhs_val_ptr = lhs + m_idx * k;
             const f64 *rhs_vec_ptr = rhs + n_idx;
@@ -187,7 +187,7 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
                 fma(4, 1), fma(5, 1), fma(6, 1), fma(7, 1);
                 _mm_prefetch(rhs_vec_ptr + RHS_PREFETCH_DIST + 0, _MM_HINT_T0);
                 _mm_prefetch(rhs_vec_ptr + RHS_PREFETCH_DIST + 8, _MM_HINT_T0);
-                lhs_val_ptr += DST_M_BLK;
+                lhs_val_ptr += OPK_M_BLK;
                 rhs_vec_ptr += n;
 #undef fma
             }
@@ -199,7 +199,7 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
 #undef store_out
 #else
             memset(dst, 0, m * n * sizeof(f64));
-            outer_product_kernel(DST_M_BLK, DST_N_BLK);
+            outer_product_kernel(OPK_M_BLK, OPK_N_BLK);
 #endif
         }
     }
