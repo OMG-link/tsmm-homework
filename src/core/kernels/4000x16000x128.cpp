@@ -22,8 +22,8 @@ static const int PREFETCH_ITER = 8;
 static const int RHS_PREFETCH_DIST = PREFETCH_ITER * DST_N_BLK;
 static const int LHS_PREFETCH_DIST = PREFETCH_ITER;
 
-static inline void _matmul_submat(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n, int lhs_line_stride,
-                                  int dst_line_stride) {
+static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
+                                  int n, int lhs_line_stride, int dst_line_stride) {
     assert(m % DST_M_BLK == 0);
     assert(n % DST_N_BLK == 0);
     for (int m_idx = 0; m_idx < m; m_idx += DST_M_BLK) {
@@ -87,7 +87,8 @@ static inline void _matmul_submat(f64 *dst, const f64 *lhs, const f64 *rhs, int 
     }
 }
 
-static inline void _matmul_block(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n) {
+static inline void _matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
+                                 int n) {
     f64 *rhs_packed = (f64 *)malloc_aligned((k * n) * sizeof(f64), 64);
 
     pack_matrix_rhs(rhs_packed, rhs, k, n, K_BLK, N_BLK);
@@ -111,7 +112,8 @@ static inline void _matmul_block(f64 *dst, const f64 *lhs, const f64 *rhs, int m
     free(rhs_packed);
 }
 
-void MatMul4000x16000x128::compute(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n) const {
+void MatMul4000x16000x128::compute(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
+                                   int n) const {
     assert(m == M && k == K && n == N);
     _matmul_block(dst, lhs, rhs, M, K, N);
 }

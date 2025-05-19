@@ -7,8 +7,8 @@ static const int DST_N_BLK = 2 * VLEN / sizeof(f64); // must be a multiple of VL
 extern "C" {
 #endif
 
-void pack_matrix_lhs(f64 *dst, const f64 *src, int m, int k, const int M_BLK, const int K_BLK);
-void pack_matrix_rhs(f64 *dst, const f64 *src, int k, int n, const int K_BLK, const int N_BLK);
+void pack_matrix_lhs(f64 *RESTRICT dst, const f64 *RESTRICT src, int m, int k, const int M_BLK, const int K_BLK);
+void pack_matrix_rhs(f64 *RESTRICT dst, const f64 *RESTRICT src, int k, int n, const int K_BLK, const int N_BLK);
 
 #ifdef __cplusplus
 }

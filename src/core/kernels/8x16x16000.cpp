@@ -10,7 +10,7 @@
 #include "core/matmul.h"
 #include "core/pack.h"
 
-static inline void _reorder_matrix_lhs(f64 *dst, const f64 *src, int m, int k, int src_line_stride) {
+static inline void _reorder_matrix_lhs(f64 *RESTRICT dst, const f64 *RESTRICT src, int m, int k, int src_line_stride) {
     const int M_BLK = DST_M_BLK;
     f64 *dst_ptr = dst;
 
@@ -128,7 +128,8 @@ static inline void _reorder_matrix_lhs(f64 *dst, const f64 *src, int m, int k, i
 #endif
 }
 
-static inline void _pack_matrix_lhs(f64 *dst, const f64 *src, int m, int k, const int M_BLK, const int K_BLK) {
+static inline void _pack_matrix_lhs(f64 *RESTRICT dst, const f64 *RESTRICT src, int m, int k, const int M_BLK,
+                                    const int K_BLK) {
     for (int m_idx = 0, m_block; m_idx < m; m_idx += m_block) {
         m_block = min_int(M_BLK, m - m_idx);
         for (int k_idx = 0, k_block; k_idx < k; k_idx += k_block) {
@@ -151,7 +152,8 @@ static const int N_BLK = 4000;
 static const int PREFETCH_ITER = 4;
 static const int RHS_PREFETCH_DIST = PREFETCH_ITER * DST_N_BLK;
 
-static inline void _matmul_submat(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n, int dst_line_stride) {
+static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
+                                  int n, int dst_line_stride) {
     for (int m_idx = 0; m_idx < m; m_idx += DST_M_BLK) {
         for (int n_idx = 0; n_idx < n; n_idx += DST_N_BLK) {
 #ifdef __AVX512F__
@@ -203,14 +205,16 @@ static inline void _matmul_submat(f64 *dst, const f64 *lhs, const f64 *rhs, int 
     }
 }
 
-static inline void _matmul_block(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n) {
+static inline void _matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
+                                 int n) {
     f64 *lhs_packed = (f64 *)malloc_aligned((m * k) * sizeof(f64), 64);
     _pack_matrix_lhs(lhs_packed, lhs, m, k, M_BLK, K_BLK);
     _matmul_submat(dst, lhs_packed, rhs, m, k, n, n);
     free(lhs_packed);
 }
 
-void MatMul8x16x16000::compute(f64 *dst, const f64 *lhs, const f64 *rhs, int m, int k, int n) const {
+void MatMul8x16x16000::compute(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
+                               int n) const {
     assert(m == M && k == K && n == N);
     _matmul_block(dst, lhs, rhs, M, K, N);
 }
