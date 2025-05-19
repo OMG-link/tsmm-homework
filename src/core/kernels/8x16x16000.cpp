@@ -149,11 +149,8 @@ static const int M_BLK = 8;
 static const int K_BLK = 16;
 static const int N_BLK = 4000;
 
-static const int PREFETCH_ITER = 4;
-static const int RHS_PREFETCH_DIST = PREFETCH_ITER * OPK_N_BLK;
-
 static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
-                                  int n, int dst_line_stride) {
+                                  int n, int rhs_line_stride, int dst_line_stride) {
     for (int m_idx = 0; m_idx < m; m_idx += OPK_M_BLK) {
         for (int n_idx = 0; n_idx < n; n_idx += OPK_N_BLK) {
 #ifdef __AVX512F__
@@ -171,6 +168,8 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
 #undef load_out
             for (int k_idx = 0; k_idx < k; k_idx++) {
 #define fma(i, j) out##i##j = _mm512_fmadd_pd(lhs_vbc##i, rhs_vec##j, out##i##j)
+                const int PREFETCH_ITER = 8;
+                const int RHS_PREFETCH_DIST = PREFETCH_ITER * OPK_N_BLK;
                 __m512d rhs_vec0 = _mm512_loadu_pd(rhs_vec_ptr + 0);
                 __m512d rhs_vec1 = _mm512_loadu_pd(rhs_vec_ptr + 8);
                 __m512d lhs_vbc0 = _mm512_set1_pd(lhs_val_ptr[0]);
@@ -188,7 +187,7 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
                 _mm_prefetch(rhs_vec_ptr + RHS_PREFETCH_DIST + 0, _MM_HINT_T0);
                 _mm_prefetch(rhs_vec_ptr + RHS_PREFETCH_DIST + 8, _MM_HINT_T0);
                 lhs_val_ptr += OPK_M_BLK;
-                rhs_vec_ptr += n;
+                rhs_vec_ptr += rhs_line_stride;
 #undef fma
             }
 #define store_out(i, j) _mm512_storeu_pd(dst_ptr + i * dst_line_stride + j * 8, out##i##j)
@@ -198,8 +197,20 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
             store_out(4, 1), store_out(5, 1), store_out(6, 1), store_out(7, 1);
 #undef store_out
 #else
-            memset(dst, 0, m * n * sizeof(f64));
-            outer_product_kernel(OPK_M_BLK, OPK_N_BLK);
+            f64 out[OPK_M_BLK * OPK_N_BLK] = {0};
+            for (int k_idx = 0; k_idx < k; k_idx++) {
+                for (int i = 0; i < OPK_M_BLK; i++) {
+                    for (int j = 0; j < OPK_N_BLK; j++) {
+                        out[i * OPK_N_BLK + j] +=
+                            lhs[m_idx * k + k_idx * OPK_M_BLK + i] * rhs[k_idx * rhs_line_stride + (n_idx + j)];
+                    }
+                }
+            }
+            for (int i = 0; i < OPK_M_BLK; i++) {
+                for (int j = 0; j < OPK_N_BLK; j++) {
+                    dst[(m_idx + i) * dst_line_stride + (n_idx + j)] = out[i * OPK_N_BLK + j];
+                }
+            }
 #endif
         }
     }
@@ -209,7 +220,7 @@ static inline void _matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, con
                                  int n) {
     f64 *lhs_packed = (f64 *)malloc_aligned((m * k) * sizeof(f64), 64);
     _pack_matrix_lhs(lhs_packed, lhs, m, k, M_BLK, K_BLK);
-    _matmul_submat(dst, lhs_packed, rhs, m, k, n, n);
+    _matmul_submat(dst, lhs_packed, rhs, m, k, n, n, n);
     free(lhs_packed);
 }
 

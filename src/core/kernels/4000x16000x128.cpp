@@ -21,10 +21,6 @@ static const int M_BLK = 64;
 static const int K_BLK = 512;
 static const int N_BLK = 128;
 
-static const int PREFETCH_ITER = 8;
-static const int RHS_PREFETCH_DIST = PREFETCH_ITER * OPK_N_BLK;
-static const int LHS_PREFETCH_DIST = PREFETCH_ITER;
-
 static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
                                   int n, int lhs_line_stride, int dst_line_stride) {
     assert(m % OPK_M_BLK == 0);
@@ -46,6 +42,9 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
 #undef load_out
             for (int k_idx = 0; k_idx < k; k_idx++) {
 #define fma(i, j) out##i##j = _mm512_fmadd_pd(lhs_vbc##i, rhs_vec##j, out##i##j)
+                const int PREFETCH_ITER = 8;
+                const int LHS_PREFETCH_DIST = PREFETCH_ITER * 1;
+                const int RHS_PREFETCH_DIST = PREFETCH_ITER * OPK_N_BLK;
                 __m512d rhs_vec0 = _mm512_loadu_pd(rhs_vec_ptr + 0);
                 __m512d rhs_vec1 = _mm512_loadu_pd(rhs_vec_ptr + 8);
                 __m512d lhs_vbc0 = _mm512_set1_pd(*(lhs_val0_ptr + 0 * lhs_line_stride));
@@ -84,7 +83,25 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
             store_out(4, 1), store_out(5, 1), store_out(6, 1), store_out(7, 1);
 #undef store_out
 #else
-            outer_product_kernel(OPK_M_BLK, OPK_N_BLK);
+            f64 out[OPK_M_BLK * OPK_N_BLK];
+            for (int i = 0; i < OPK_M_BLK; i++) {
+                for (int j = 0; j < OPK_N_BLK; j++) {
+                    out[i * OPK_N_BLK + j] = dst[(m_idx + i) * dst_line_stride + (n_idx + j)];
+                }
+            }
+            for (int k_idx = 0; k_idx < k; k_idx++) {
+                for (int i = 0; i < OPK_M_BLK; i++) {
+                    for (int j = 0; j < OPK_N_BLK; j++) {
+                        out[i * OPK_N_BLK + j] +=
+                            lhs[(m_idx + i) * lhs_line_stride + k_idx] * rhs[n_idx * k + k_idx * OPK_N_BLK + j];
+                    }
+                }
+            }
+            for (int i = 0; i < OPK_M_BLK; i++) {
+                for (int j = 0; j < OPK_N_BLK; j++) {
+                    dst[(m_idx + i) * dst_line_stride + (n_idx + j)] = out[i * OPK_N_BLK + j];
+                }
+            }
 #endif
         }
     }
