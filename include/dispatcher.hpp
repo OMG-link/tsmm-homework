@@ -3,6 +3,8 @@
 #include <vector>
 
 #include "core/kernel_base.hpp"
+#include "core/kernels/144x144x144.hpp"
+#include "core/kernels/32x16000x16.hpp"
 #include "core/kernels/4000x16000x128.hpp"
 #include "core/kernels/8x16x16000.hpp"
 #include "matmul.hpp"
@@ -13,6 +15,8 @@ class MatMulDispatcher {
     MatMulDispatcher() {
         register_kernel<MatMul4000x16000x128>();
         register_kernel<MatMul8x16x16000>();
+        register_kernel<MatMul32x16000x16>();
+        register_kernel<MatMul144x144x144>();
     }
 
     Matrix operator()(const Matrix &lhs, const Matrix &rhs) {
