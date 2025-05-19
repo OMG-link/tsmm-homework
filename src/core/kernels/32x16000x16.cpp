@@ -7,8 +7,8 @@
 #include <immintrin.h>
 #endif
 
-#include "matmul.h"
-#include "pack.h"
+#include "core/matmul.h"
+#include "core/pack.h"
 
 static const int M = 32;
 static const int K = 16000;
@@ -66,7 +66,7 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
                     _mm_prefetch(lhs_val0_ptr + 6 * lhs_line_stride + LHS_PREFETCH_DIST, _MM_HINT_T0);
                     _mm_prefetch(lhs_val0_ptr + 7 * lhs_line_stride + LHS_PREFETCH_DIST, _MM_HINT_T0);
                 }
-                lhs_val0_ptr += OPK_M_BLK;
+                lhs_val0_ptr += 1;
                 rhs_vec_ptr += rhs_line_strde;
 #undef fma
             }
