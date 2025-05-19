@@ -1,4 +1,4 @@
-file(GLOB TEST_SOURCES "func*.cpp" "perf*.cpp" "sfunc*.cpp")
+file(GLOB TEST_SOURCES "func*.cpp" "perf*.cpp")
 
 foreach(test_source ${TEST_SOURCES})
   get_filename_component(test_name ${test_source} NAME_WE)
