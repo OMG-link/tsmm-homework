@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(Matmul)
 
 include(CheckCXXCompilerFlag)
+include(CheckIPOSupported)
 enable_testing()
 
 set(CMAKE_CXX_STANDARD 17)
@@ -11,11 +12,18 @@ find_package(OpenMP REQUIRED)
 add_compile_options(-fmax-errors=3)
 
 check_cxx_compiler_flag("-mavx512f" COMPILER_SUPPORTS_AVX512F)
+check_ipo_supported(RESULT LTO_SUPPORTED OUTPUT LTO_OUTPUT)
 
 if(COMPILER_SUPPORTS_AVX512F)
     add_compile_options(-mavx512f)
 else()
     message(STATUS "Compiler does NOT support -mavx512f, skipping AVX-512")
+endif()
+
+if(LTO_SUPPORTED)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+else()
+    message(WARNING "LTO not supported: ${LTO_OUTPUT}")
 endif()
 
 if(NOT CMAKE_BUILD_TYPE)
