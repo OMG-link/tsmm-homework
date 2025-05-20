@@ -168,7 +168,7 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
 #undef load_out
             for (int k_idx = 0; k_idx < k; k_idx++) {
 #define fma(i, j) out##i##j = _mm512_fmadd_pd(lhs_vbc##i, rhs_vec##j, out##i##j)
-                const int PREFETCH_ITER = 8;
+                const int PREFETCH_ITER = 4;
                 const int RHS_PREFETCH_DIST = PREFETCH_ITER * OPK_N_BLK;
                 __m512d rhs_vec0 = _mm512_loadu_pd(rhs_vec_ptr + 0);
                 __m512d rhs_vec1 = _mm512_loadu_pd(rhs_vec_ptr + 8);
