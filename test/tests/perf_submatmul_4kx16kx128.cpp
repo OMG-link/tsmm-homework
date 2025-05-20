@@ -9,9 +9,9 @@
 void test(int m, int k, int n) {
     using namespace std::chrono;
 
-    f64 *dst = (f64 *)malloc_aligned(m * n * sizeof(f64), 64);
-    f64 *lhs = (f64 *)malloc_aligned(m * k * sizeof(f64), 64);
-    f64 *rhs = (f64 *)malloc_aligned(k * n * sizeof(f64), 64);
+    f64 *dst = (f64 *)malloc_aligned(m * n * sizeof(f64), 128);
+    f64 *lhs = (f64 *)malloc_aligned(m * k * sizeof(f64), 128);
+    f64 *rhs = (f64 *)malloc_aligned(k * n * sizeof(f64), 128);
 
     const int M_BLK = 128;
     const int K_BLK = 256;

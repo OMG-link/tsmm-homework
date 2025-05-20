@@ -109,7 +109,7 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
 
 static inline void _matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
                                  int n) {
-    f64 *rhs_packed = (f64 *)malloc_aligned((k * n) * sizeof(f64), 64);
+    f64 *rhs_packed = (f64 *)malloc_aligned((k * n) * sizeof(f64), 128);
 
     pack_matrix_rhs(rhs_packed, rhs, k, n, K_BLK, N_BLK);
 

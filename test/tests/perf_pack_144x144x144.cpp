@@ -188,8 +188,8 @@ static inline void _pack_matrix_rhs(f64 *RESTRICT dst, const f64 *RESTRICT src, 
 void test(const Matrix &a, const Matrix &b) {
     using namespace std::chrono;
 
-    f64 *a_packed = (f64 *)malloc_aligned(a.rows() * a.cols() * sizeof(f64), 64);
-    f64 *b_packed = (f64 *)malloc_aligned(b.rows() * b.cols() * sizeof(f64), 64);
+    f64 *a_packed = (f64 *)malloc_aligned(a.rows() * a.cols() * sizeof(f64), 128);
+    f64 *b_packed = (f64 *)malloc_aligned(b.rows() * b.cols() * sizeof(f64), 128);
 
     auto start_lhs = high_resolution_clock::now();
     pack_matrix_lhs(a_packed, a.data(), a.rows(), a.cols(), 144, 144);

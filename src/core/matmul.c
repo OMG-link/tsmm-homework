@@ -20,8 +20,8 @@ static const int LHS_PREFETCH_DIST = PREFETCH_ITER * OPK_M_BLK;
 void matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k, int n,
                   const int M_BLK, const int K_BLK, const int N_BLK) {
     // pack
-    f64 *lhs_packed = (f64 *)malloc_aligned((m * k + LHS_PREFETCH_DIST) * sizeof(f64), 64);
-    f64 *rhs_packed = (f64 *)malloc_aligned((k * n + RHS_PREFETCH_DIST) * sizeof(f64), 64);
+    f64 *lhs_packed = (f64 *)malloc_aligned((m * k + LHS_PREFETCH_DIST) * sizeof(f64), 128);
+    f64 *rhs_packed = (f64 *)malloc_aligned((k * n + RHS_PREFETCH_DIST) * sizeof(f64), 128);
     pack_matrix_lhs(lhs_packed, lhs, m, k, M_BLK, K_BLK);
     pack_matrix_rhs(rhs_packed, rhs, k, n, K_BLK, N_BLK);
 
