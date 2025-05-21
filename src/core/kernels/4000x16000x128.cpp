@@ -20,8 +20,8 @@ static const int M = 4000;
 static const int K = 16000;
 static const int N = 128;
 
-static const int M_BLK = 64;
-static const int K_BLK = 512;
+static const int M_BLK = 128;
+static const int K_BLK = 256;
 static const int N_BLK = 128;
 
 #ifdef __AVX512F__
