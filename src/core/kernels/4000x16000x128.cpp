@@ -128,7 +128,7 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
             for (int k_idx = 0; k_idx < k; k_idx++) {
                 const int PREFETCH_ITER = 8;
                 const int LHS_PREFETCH_DIST = PREFETCH_ITER * 1;
-                const int RHS_PREFETCH_DIST = PREFETCH_ITER * OPK_N_BLK;
+                const int RHS_PREFETCH_DIST = PREFETCH_ITER * 8;
                 __m512d rhs_vec0 = _mm512_loadu_pd(rhs_vec_ptr + 0);
                 __m512d lhs_vbc0 = _mm512_set1_pd(*(lhs_val0_ptr + 0 * lhs_line_stride));
                 __m512d lhs_vbc1 = _mm512_set1_pd(*(lhs_val0_ptr + 1 * lhs_line_stride));
@@ -153,7 +153,7 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
                     _mm_prefetch(lhs_val0_ptr + 7 * lhs_line_stride + LHS_PREFETCH_DIST, _MM_HINT_T0);
                 }
                 lhs_val0_ptr += 1;
-                rhs_vec_ptr += OPK_N_BLK;
+                rhs_vec_ptr += 8;
             }
             store_out(0, 0), store_out(1, 0), store_out(2, 0), store_out(3, 0);
             store_out(4, 0), store_out(5, 0), store_out(6, 0), store_out(7, 0);
