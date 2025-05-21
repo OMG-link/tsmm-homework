@@ -1,5 +1,6 @@
 #include "core/kernels/4000x128x16000.hpp"
 
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -20,9 +21,9 @@ static const int M = 4000;
 static const int K = 128;
 static const int N = 16000;
 
-static const int M_BLK = 200;
+static const int M_BLK = 4000;
 static const int K_BLK = 128;
-static const int N_BLK = 192;
+static const int N_BLK = 720;
 
 #ifdef __AVX512F__
 #define load_out(i, j) out##i##j = _mm512_loadu_pd(dst_ptr + i * dst_line_stride + j * 8)
@@ -52,7 +53,7 @@ static const int N_BLK = 192;
     }
 
 static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
-                                  int n, int dst_line_stride, int should_load_dst) {
+                                  int n, int dst_line_stride) {
     assert(m % OPK_M_BLK == 0);
     assert(n % 8 == 0);
     for (int m_idx = 0; m_idx < m; m_idx += OPK_M_BLK) {
@@ -65,23 +66,14 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
             __m512d out00, out10, out20, out30, out40, out50, out60, out70;
             __m512d out01, out11, out21, out31, out41, out51, out61, out71;
             __m512d out02, out12, out22, out32, out42, out52, out62, out72;
-            if (should_load_dst) {
-                load_out(0, 0), load_out(1, 0), load_out(2, 0), load_out(3, 0);
-                load_out(4, 0), load_out(5, 0), load_out(6, 0), load_out(7, 0);
-                load_out(0, 1), load_out(1, 1), load_out(2, 1), load_out(3, 1);
-                load_out(4, 1), load_out(5, 1), load_out(6, 1), load_out(7, 1);
-                load_out(0, 2), load_out(1, 2), load_out(2, 2), load_out(3, 2);
-                load_out(4, 2), load_out(5, 2), load_out(6, 2), load_out(7, 2);
-            } else {
-                zero_out(0, 0), zero_out(1, 0), zero_out(2, 0), zero_out(3, 0);
-                zero_out(4, 0), zero_out(5, 0), zero_out(6, 0), zero_out(7, 0);
-                zero_out(0, 1), zero_out(1, 1), zero_out(2, 1), zero_out(3, 1);
-                zero_out(4, 1), zero_out(5, 1), zero_out(6, 1), zero_out(7, 1);
-                zero_out(0, 2), zero_out(1, 2), zero_out(2, 2), zero_out(3, 2);
-                zero_out(4, 2), zero_out(5, 2), zero_out(6, 2), zero_out(7, 2);
-            }
+            zero_out(0, 0), zero_out(1, 0), zero_out(2, 0), zero_out(3, 0);
+            zero_out(4, 0), zero_out(5, 0), zero_out(6, 0), zero_out(7, 0);
+            zero_out(0, 1), zero_out(1, 1), zero_out(2, 1), zero_out(3, 1);
+            zero_out(4, 1), zero_out(5, 1), zero_out(6, 1), zero_out(7, 1);
+            zero_out(0, 2), zero_out(1, 2), zero_out(2, 2), zero_out(3, 2);
+            zero_out(4, 2), zero_out(5, 2), zero_out(6, 2), zero_out(7, 2);
             for (int k_idx = 0; k_idx < k; k_idx++) {
-                const int PREFETCH_ITER = 8;
+                const int PREFETCH_ITER = 4;
                 const int RHS_PREFETCH_DIST = PREFETCH_ITER * OPK_N_BLK;
                 const int LHS_PREFETCH_DIST = PREFETCH_ITER * OPK_M_BLK;
                 __m512d rhs_vec0 = _mm512_loadu_pd(rhs_vec_ptr + 0);
@@ -126,18 +118,14 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
             f64 *dst_ptr = dst + m_idx * dst_line_stride + n_idx;
             __m512d out00, out10, out20, out30, out40, out50, out60, out70;
             __m512d out01, out11, out21, out31, out41, out51, out61, out71;
-            if (should_load_dst) {
-                load_out(0, 0), load_out(1, 0), load_out(2, 0), load_out(3, 0);
-                load_out(4, 0), load_out(5, 0), load_out(6, 0), load_out(7, 0);
-                load_out(0, 1), load_out(1, 1), load_out(2, 1), load_out(3, 1);
-                load_out(4, 1), load_out(5, 1), load_out(6, 1), load_out(7, 1);
-            } else {
-                zero_out(0, 0), zero_out(1, 0), zero_out(2, 0), zero_out(3, 0);
-                zero_out(4, 0), zero_out(5, 0), zero_out(6, 0), zero_out(7, 0);
-                zero_out(0, 1), zero_out(1, 1), zero_out(2, 1), zero_out(3, 1);
-                zero_out(4, 1), zero_out(5, 1), zero_out(6, 1), zero_out(7, 1);
-            }
+            zero_out(0, 0), zero_out(1, 0), zero_out(2, 0), zero_out(3, 0);
+            zero_out(4, 0), zero_out(5, 0), zero_out(6, 0), zero_out(7, 0);
+            zero_out(0, 1), zero_out(1, 1), zero_out(2, 1), zero_out(3, 1);
+            zero_out(4, 1), zero_out(5, 1), zero_out(6, 1), zero_out(7, 1);
             for (int k_idx = 0; k_idx < k; k_idx++) {
+                const int PREFETCH_ITER = 4;
+                const int RHS_PREFETCH_DIST = PREFETCH_ITER * OPK_N_BLK;
+                const int LHS_PREFETCH_DIST = PREFETCH_ITER * OPK_M_BLK;
                 __m512d rhs_vec0 = _mm512_loadu_pd(rhs_vec_ptr + 0);
                 __m512d rhs_vec1 = _mm512_loadu_pd(rhs_vec_ptr + 8);
                 __m512d lhs_vbc0 = _mm512_set1_pd(lhs_val_ptr[0]);
@@ -152,6 +140,9 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
                 __m512d lhs_vbc7 = _mm512_set1_pd(lhs_val_ptr[7]);
                 fma(4, 0), fma(5, 0), fma(6, 0), fma(7, 0);
                 fma(4, 1), fma(5, 1), fma(6, 1), fma(7, 1);
+                _mm_prefetch(rhs_vec_ptr + RHS_PREFETCH_DIST + 0, _MM_HINT_T0);
+                _mm_prefetch(rhs_vec_ptr + RHS_PREFETCH_DIST + 8, _MM_HINT_T0);
+                _mm_prefetch(lhs_val_ptr + LHS_PREFETCH_DIST + 0, _MM_HINT_T0);
                 lhs_val_ptr += OPK_M_BLK;
                 rhs_vec_ptr += 16;
             }
@@ -173,29 +164,31 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
 #undef store_out
 #endif
 
-static inline void _matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
-                                 int n) {
+static inline void _matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs) {
+    const int m = M;
+    const int k = K;
+    const int n = N;
     f64 *lhs_packed = (f64 *)malloc_aligned((m * k) * sizeof(f64), 128);
     f64 *rhs_packed = (f64 *)malloc_aligned((k * n) * sizeof(f64), 128);
 
     pack_matrix_lhs(lhs_packed, lhs, m, k, M_BLK, K_BLK, OPK_M_BLK);
     pack_matrix_rhs(rhs_packed, rhs, k, n, K_BLK, N_BLK, OPK_N_BLK);
 
+    static_assert(M_BLK == m);
+    const int m_idx = 0;
+    const int m_block = M_BLK;
 #ifdef _OPENMP
-#pragma omp parallel for collapse(2) schedule(dynamic)
+#pragma omp parallel for collapse(1) schedule(dynamic)
 #endif
-    for (int m_idx = 0; m_idx < m; m_idx += M_BLK) {
-        for (int n_idx = 0; n_idx < n; n_idx += N_BLK) {
-            int m_block = min_int(M_BLK, m - m_idx);
-            int n_block = min_int(N_BLK, n - n_idx);
-            for (int k_idx = 0, k_block; k_idx < k; k_idx += k_block) {
-                k_block = min_int(K_BLK, k - k_idx);
-                const f64 *lhs_submat = lhs_packed + m_idx * k + k_idx * m_block;
-                const f64 *rhs_submat = rhs_packed + n_idx * k + k_idx * n_block;
-                f64 *dst_submat = dst + m_idx * n + n_idx;
-                _matmul_submat(dst_submat, lhs_submat, rhs_submat, m_block, k_block, n_block, n, k_idx != 0 ? 1 : 0);
-            }
-        }
+    for (int n_idx = 0; n_idx < n; n_idx += N_BLK) {
+        int n_block = min_int(N_BLK, n - n_idx);
+        static_assert(K_BLK == k);
+        const int k_idx = 0;
+        const int k_block = K_BLK;
+        const f64 *lhs_submat = lhs_packed + m_idx * k + k_idx * m_block;
+        const f64 *rhs_submat = rhs_packed + n_idx * k + k_idx * n_block;
+        f64 *dst_submat = dst + m_idx * n + n_idx;
+        _matmul_submat(dst_submat, lhs_submat, rhs_submat, m_block, k_block, n_block, n);
     }
 
     free(lhs_packed);
@@ -205,5 +198,5 @@ static inline void _matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, con
 void MatMul4000x128x16000::compute(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
                                    int n) const {
     assert(m == M && k == K && n == N);
-    _matmul_block(dst, lhs, rhs, M, K, N);
+    _matmul_block(dst, lhs, rhs);
 }
