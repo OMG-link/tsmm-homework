@@ -13,9 +13,9 @@ void test(int m, int k, int n) {
     f64 *lhs = (f64 *)malloc_aligned(m * k * sizeof(f64), 128);
     f64 *rhs = (f64 *)malloc_aligned(k * n * sizeof(f64), 128);
 
-    const int M_BLK = 128;
-    const int K_BLK = 256;
-    const int N_BLK = 128;
+    const int M_BLK = 200;
+    const int K_BLK = 128;
+    const int N_BLK = 192;
 
     int fd_cycles = perf_event_cycles();
     int fd_instrs = perf_event_instructions();
@@ -80,5 +80,5 @@ void test(int m, int k, int n) {
 
 int main() {
     printf("Running on CPU %d.\n", get_cpu_id());
-    test(4000, 16000, 128);
+    test(4000, 128, 16000);
 }

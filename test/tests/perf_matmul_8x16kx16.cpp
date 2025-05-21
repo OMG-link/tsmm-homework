@@ -2,14 +2,14 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "core/kernels/32x16000x16.hpp"
+#include "core/kernels/8x16000x16.hpp"
 #include "matmul.hpp"
 #include "perf.h"
 
 void test(const Matrix &a, const Matrix &b) {
     using namespace std::chrono;
 
-    MatMul32x16000x16 kernel;
+    MatMul8x16000x16 kernel;
     Matrix c(a.rows(), b.cols());
 
     int fd_cycles = perf_event_cycles();
@@ -47,14 +47,12 @@ void test(const Matrix &a, const Matrix &b) {
     perf_close_event(fd_l1_m);
 
     auto seconds = duration_cast<duration<double>>(end_opt - start_opt).count();
-
     double M = static_cast<double>(a.rows());
     double N = static_cast<double>(b.cols());
     double K = static_cast<double>(a.cols());
-    double operations = 2.0 * M * N * K;
-    double gflops = operations / (seconds * 1e9);
+    double gflops = (2.0 * M * N * K) / (seconds * 1e9);
 
-    printf("ok | time = %.6e s | GFLOPS = %.2f\n", seconds, gflops);
+    printf("ok | time = %.6f s | GFLOPS = %.2f\n", seconds, gflops);
     printf("cycles         = %lu\n", cycles);
     printf("instructions   = %lu\n", instrs);
     printf("- IPC          = %f\n", (double)instrs / cycles);
@@ -64,6 +62,6 @@ void test(const Matrix &a, const Matrix &b) {
 
 int main() {
     printf("Running on CPU %d.\n", get_cpu_id());
-    Matrix a(32, 16000), b(16000, 16);
+    Matrix a(8, 16000), b(16000, 16);
     test(a, b);
 }

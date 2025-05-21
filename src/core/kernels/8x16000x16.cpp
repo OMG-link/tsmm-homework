@@ -1,4 +1,4 @@
-#include "core/kernels/32x16000x16.hpp"
+#include "core/kernels/8x16000x16.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -13,13 +13,9 @@
 static const int OPK_M_BLK = 8;
 static const int OPK_N_BLK = 16;
 
-static const int M = 32;
+static const int M = 8;
 static const int K = 16000;
 static const int N = 16;
-
-static const int M_BLK = 32;
-static const int K_BLK = 16000;
-static const int N_BLK = 16;
 
 #ifdef __AVX512F__
 #define load_out(i, j) out##i##j = _mm512_loadu_pd(dst_ptr + i * dst_line_stride + j * 8)
@@ -105,8 +101,8 @@ static inline void _matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, con
     _matmul_submat(dst, lhs, rhs, m, k, n, k, n, n);
 }
 
-void MatMul32x16000x16::compute(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
-                                int n) const {
+void MatMul8x16000x16::compute(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k,
+                               int n) const {
     assert(m == M && k == K && n == N);
     _matmul_block(dst, lhs, rhs, M, K, N);
 }

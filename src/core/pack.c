@@ -6,8 +6,8 @@
 #include <immintrin.h>
 #endif
 
-static void reorder_matrix_lhs(f64 *RESTRICT dst, const f64 *RESTRICT src, int m, int k, int src_line_stride,
-                               const int OPK_M_BLK) {
+static inline void reorder_matrix_lhs(f64 *RESTRICT dst, const f64 *RESTRICT src, int m, int k, int src_line_stride,
+                                      const int OPK_M_BLK) {
     const int M_BLK = OPK_M_BLK;
     f64 *dst_ptr = dst;
 
@@ -138,8 +138,8 @@ void pack_matrix_lhs(f64 *RESTRICT dst, const f64 *RESTRICT src, int m, int k, c
     }
 }
 
-static void reorder_matrix_rhs(f64 *RESTRICT dst, const f64 *RESTRICT src, int k, int n, int src_line_stride,
-                               const int OPK_N_BLK) {
+static inline void reorder_matrix_rhs(f64 *RESTRICT dst, const f64 *RESTRICT src, int k, int n, int src_line_stride,
+                                      const int OPK_N_BLK) {
     const int N_BLK = OPK_N_BLK;
     f64 *dst_ptr = dst;
 #ifdef __AVX512F__

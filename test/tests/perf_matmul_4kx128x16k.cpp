@@ -2,14 +2,14 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "core/kernels/4000x16000x128.hpp"
+#include "core/kernels/4000x128x16000.hpp"
 #include "matmul.hpp"
 #include "perf.h"
 
 void test(const Matrix &a, const Matrix &b) {
     using namespace std::chrono;
 
-    MatMul4000x16000x128 kernel;
+    MatMul4000x128x16000 kernel;
     Matrix c(a.rows(), b.cols());
 
     int fd_cycles = perf_event_cycles();
@@ -64,6 +64,6 @@ void test(const Matrix &a, const Matrix &b) {
 
 int main() {
     printf("Running on CPU %d.\n", get_cpu_id());
-    Matrix a(4000, 16000), b(16000, 128);
+    Matrix a(4000, 128), b(128, 16000);
     test(a, b);
 }
