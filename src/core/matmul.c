@@ -49,11 +49,6 @@ void matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRIC
     free(rhs_packed);
 }
 
-#ifdef __AVX512F__
-#define load_out(i, j) out##i##j = _mm512_loadu_pd(dst_ptr + i * dst_line_stride + j * 8)
-#define fma(i, j) out##i##j = _mm512_fmadd_pd(lhs_vbc##i, rhs_vec##j, out##i##j)
-#define store_out(i, j) _mm512_storeu_pd(dst_ptr + i * dst_line_stride + j * 8, out##i##j)
-#else
 #define outer_product_kernel(m_block, n_block)                                                                         \
     f64 out[m_block * n_block];                                                                                        \
     for (int i = 0; i < m_block; i++) {                                                                                \
@@ -73,6 +68,11 @@ void matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRIC
             dst[(m_idx + i) * dst_line_stride + (n_idx + j)] = out[i * n_block + j];                                   \
         }                                                                                                              \
     }
+
+#ifdef __AVX512F__
+#define load_out(i, j) out##i##j = _mm512_loadu_pd(dst_ptr + i * dst_line_stride + j * 8)
+#define fma(i, j) out##i##j = _mm512_fmadd_pd(lhs_vbc##i, rhs_vec##j, out##i##j)
+#define store_out(i, j) _mm512_storeu_pd(dst_ptr + i * dst_line_stride + j * 8, out##i##j)
 #endif
 
 void matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRICT rhs, int m, int k, int n,
@@ -154,6 +154,4 @@ void matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRI
 #undef load_out
 #undef fma
 #undef store_out
-#else
-#undef outer_product_kernel
 #endif
