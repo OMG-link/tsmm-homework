@@ -2,6 +2,7 @@
 #define PERF_H
 
 #include <linux/perf_event.h>
+#include <sched.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +14,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static inline int get_cpu_id() { return sched_getcpu(); }
 
 static inline int perf_open_event(uint32_t type, uint64_t config) {
     struct perf_event_attr pe;

@@ -78,4 +78,7 @@ void test(int m, int k, int n) {
     free(dst);
 }
 
-int main() { test(4000, 16000, 128); }
+int main() {
+    printf("Running on CPU %d.\n", get_cpu_id());
+    test(4000, 16000, 128);
+}

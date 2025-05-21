@@ -61,6 +61,7 @@ void test(const Matrix &a, const Matrix &b) {
 }
 
 int main() {
+    printf("Running on CPU %d.\n", get_cpu_id());
     Matrix a(8, 16), b(16, 16000);
     test(a, b);
 }

@@ -4,6 +4,7 @@
 
 #include "core/pack.h"
 #include "matrix.hpp"
+#include "perf.h"
 
 void test(const Matrix &a, const Matrix &b) {
     using namespace std::chrono;
@@ -28,6 +29,7 @@ void test(const Matrix &a, const Matrix &b) {
 }
 
 int main() {
+    printf("Running on CPU %d.\n", get_cpu_id());
     Matrix a(4000, 16000), b(16000, 128);
     test(a, b);
 }
