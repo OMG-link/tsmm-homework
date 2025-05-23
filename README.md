@@ -68,10 +68,10 @@ Matrix a = Matrix::from_file("./test/data/4000x16000_1.txt");
 性能测试不读取任何文件。
 
 目前包含的性能测试：
-- `perf_matmul_4kx16kx128`: $4000 \times 16000 \times 128$ 规模的矩阵乘法内核。
-- `perf_matmul_8x16x16k`: $8 \times 16 \times 16000$ 规模的矩阵乘法内核。
-- `perf_matmul_32x16kx16`: $32 \times 16000 \times 16$ 规模的矩阵乘法内核。
+- `perf_matmul_4kx128x16k`: $4000 \times 128 \times 16000$ 规模的矩阵乘法内核。
+- `perf_matmul_8x16kx16`: $8 \times 16000 \times 16$ 规模的矩阵乘法内核。
+- `perf_matmul_32x16x16k`: $32 \times 16 \times 16000$ 规模的矩阵乘法内核。
 - `perf_matmul_144x144x144`: $144 \times 144 \times 144$ 规模的矩阵乘法内核。
-- `perf_pack_4kx16kx128`: 对 $4000 \times 16000 \times 128$ 规模的矩阵进行packing。
+- `perf_pack_4kx128x16k`: 对 $4000 \times 128 \times 16000$ 规模的矩阵进行packing。
 - `perf_pack_144x144x144`: 对 $144 \times 144 \times 144$ 规模的矩阵进行packing。
-- `perf_submatmul_4kx16kx128`: 对 $4000 \times 16000 \times 128$ 规模的计算矩阵乘法（省略packing）。
+- `perf_submatmul_4kx128x16k`: 对 $4000 \times 128 \times 16000$ 规模的计算矩阵乘法（省略packing）。
