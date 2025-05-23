@@ -32,9 +32,9 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
                                   int n, int rhs_line_stride, int dst_line_stride) {
     assert(m % OPK_M_BLK == 0);
     assert(n % 8 == 0);
-    for (int m_idx = 0; m_idx < m; m_idx += OPK_M_BLK) {
-        int n_idx = 0;
-        for (; n_idx + OPK_N_BLK <= n; n_idx += OPK_N_BLK) {
+    int n_idx = 0;
+    for (; n_idx + OPK_N_BLK <= n; n_idx += OPK_N_BLK) {
+        for (int m_idx = 0; m_idx < m; m_idx += OPK_M_BLK) {
 #ifdef __AVX512F__
             const f64 *lhs_val_ptr = lhs + m_idx * k;
             const f64 *rhs_vec_ptr = rhs + n_idx;
@@ -97,8 +97,10 @@ static inline void _matmul_submat(f64 *RESTRICT dst, const f64 *RESTRICT lhs, co
             }
 #endif
         }
+    }
+    {
         assert(n - n_idx == 16);
-        {
+        for (int m_idx = 0; m_idx < m; m_idx += OPK_M_BLK) {
 #ifdef __AVX512F__
             const f64 *lhs_val_ptr = lhs + m_idx * k;
             const f64 *rhs_vec_ptr = rhs + n_idx;
