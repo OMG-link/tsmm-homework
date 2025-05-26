@@ -20,6 +20,7 @@ set(ext_mkl_source "ext_mkl.cpp")
 add_executable(ext_mkl ${ext_mkl_source})
 target_link_libraries(ext_mkl
   PRIVATE
+    libmatmul
     mkl_intel_lp64
     mkl_sequential
     mkl_core
