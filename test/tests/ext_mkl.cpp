@@ -34,8 +34,6 @@ int main(int argc, char *argv[]) {
     for (long long i = 0; i < 1LL * m * n; ++i)
         C[i] = 0.0;
 
-    mkl_set_num_threads(1);
-
     /* ---------- 热身 ---------- */
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, 1.0, A, k, B, n, 0.0, C, n);
 

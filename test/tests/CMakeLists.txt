@@ -20,14 +20,11 @@ add_executable(ext_mkl "ext_mkl.cpp")
 target_link_libraries(ext_mkl
   PRIVATE
     libmatmul
-    mkl_intel_lp64
-    mkl_sequential
-    mkl_core
+    OpenMP::OpenMP_CXX
+    mkl_rt
     pthread
     m
     dl
-  PUBLIC
-    OpenMP::OpenMP_CXX
 )
 
 # tune
