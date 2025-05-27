@@ -18,7 +18,7 @@ void test(const Matrix &a, const Matrix &b) {
     test_kernel(
         a, b,
         [](f64 *dst, const f64 *lhs, const f64 *rhs, size_t m, size_t k, size_t n) {
-            matmul_block(dst, lhs, rhs, m, k, n, 192, 256, 192);
+            matmul_block(dst, lhs, rhs, m, k, n, 4000, 128, 720);
         },
         "generic-optimized");
 }
