@@ -45,6 +45,6 @@ file(GLOB LIBMATMUL_SOURCES
 
 add_library(libmatmul STATIC ${LIBMATMUL_SOURCES})
 target_include_directories(libmatmul PUBLIC include)
-target_link_libraries(libmatmul PUBLIC OpenMP::OpenMP_CXX)
+target_link_libraries(libmatmul PUBLIC OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
 
 add_subdirectory(test/tests)
