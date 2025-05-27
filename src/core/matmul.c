@@ -37,7 +37,7 @@ void matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRIC
                 const f64 *lhs_submat = lhs_packed + m_idx * k + k_idx * m_block;
                 const f64 *rhs_submat = rhs_packed + n_idx * k + k_idx * n_block;
                 f64 *dst_submat = dst + m_idx * n + n_idx;
-                matmul_submat(dst_submat, lhs_submat, rhs_submat, m_block, k_block, n_block, n, k_idx);
+                matmul_submat(dst_submat, lhs_submat, rhs_submat, m_block, k_block, n_block, n, k_idx == 0);
             }
         }
     }
