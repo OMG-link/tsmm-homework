@@ -178,7 +178,7 @@ static inline void _matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, con
     const int m_idx = 0;
     const int m_block = M_BLK;
 #ifdef _OPENMP
-#pragma omp parallel for collapse(1) schedule(dynamic)
+#pragma omp parallel for collapse(1) schedule(static)
 #endif
     for (int n_idx = 0; n_idx < n; n_idx += N_BLK) {
         int n_block = min_int(N_BLK, n - n_idx);

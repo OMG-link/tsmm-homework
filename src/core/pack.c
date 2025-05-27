@@ -127,10 +127,13 @@ static inline void reorder_matrix_lhs(f64 *RESTRICT dst, const f64 *RESTRICT src
 
 void pack_matrix_lhs(f64 *RESTRICT dst, const f64 *RESTRICT src, int m, int k, const int M_BLK, const int K_BLK,
                      const int OPK_M_BLK) {
-    for (int m_idx = 0, m_block; m_idx < m; m_idx += m_block) {
-        m_block = min_int(M_BLK, m - m_idx);
-        for (int k_idx = 0, k_block; k_idx < k; k_idx += k_block) {
-            k_block = min_int(K_BLK, k - k_idx);
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2) schedule(static)
+#endif
+    for (int m_idx = 0; m_idx < m; m_idx += M_BLK) {
+        for (int k_idx = 0; k_idx < k; k_idx += K_BLK) {
+            int m_block = min_int(M_BLK, m - m_idx);
+            int k_block = min_int(K_BLK, k - k_idx);
             const f64 *src_ptr = src + m_idx * k + k_idx;
             f64 *dst_ptr = dst + m_idx * k + k_idx * m_block;
             reorder_matrix_lhs(dst_ptr, src_ptr, m_block, k_block, k, OPK_M_BLK);
@@ -173,10 +176,13 @@ static inline void reorder_matrix_rhs(f64 *RESTRICT dst, const f64 *RESTRICT src
 
 void pack_matrix_rhs(f64 *RESTRICT dst, const f64 *RESTRICT src, int k, int n, const int K_BLK, const int N_BLK,
                      const int OPK_N_BLK) {
-    for (int k_idx = 0, k_block; k_idx < k; k_idx += k_block) {
-        k_block = min_int(K_BLK, k - k_idx);
-        for (int n_idx = 0, n_block; n_idx < n; n_idx += n_block) {
-            n_block = min_int(N_BLK, n - n_idx);
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2) schedule(static)
+#endif
+    for (int k_idx = 0; k_idx < k; k_idx += K_BLK) {
+        for (int n_idx = 0; n_idx < n; n_idx += N_BLK) {
+            int k_block = min_int(K_BLK, k - k_idx);
+            int n_block = min_int(N_BLK, n - n_idx);
             const f64 *src_ptr = src + k_idx * n + n_idx;
             f64 *dst_ptr = dst + k_idx * n_block + n_idx * k;
             reorder_matrix_rhs(dst_ptr, src_ptr, k_block, n_block, n, OPK_N_BLK);

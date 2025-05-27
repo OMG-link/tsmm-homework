@@ -26,7 +26,7 @@ void matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, const f64 *RESTRIC
 
     // do mat mul
 #ifdef _OPENMP
-#pragma omp parallel for collapse(2) schedule(dynamic)
+#pragma omp parallel for collapse(2) schedule(static)
 #endif
     for (int m_idx = 0; m_idx < m; m_idx += M_BLK) {
         for (int n_idx = 0; n_idx < n; n_idx += N_BLK) {
