@@ -1,4 +1,4 @@
-file(GLOB TEST_SOURCES "func*.cpp" "perf*.cpp" "tune_blocking_strategy.cpp")
+file(GLOB TEST_SOURCES "func*.cpp" "perf*.cpp")
 
 foreach(test_source ${TEST_SOURCES})
   get_filename_component(test_name ${test_source} NAME_WE)
@@ -16,8 +16,7 @@ endforeach()
 # mkl
 find_package(OpenMP REQUIRED)
 
-set(ext_mkl_source "ext_mkl.cpp")
-add_executable(ext_mkl ${ext_mkl_source})
+add_executable(ext_mkl "ext_mkl.cpp")
 target_link_libraries(ext_mkl
   PRIVATE
     libmatmul
@@ -30,8 +29,7 @@ target_link_libraries(ext_mkl
   PUBLIC
     OpenMP::OpenMP_CXX
 )
-add_test(
-  NAME ext_mkl
-  COMMAND ext_mkl
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-)
+
+# tune
+add_executable(tune_blocking_strategy "tune_blocking_strategy.cpp")
+target_link_libraries(tune_blocking_strategy PRIVATE libmatmul)
