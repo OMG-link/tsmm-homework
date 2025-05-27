@@ -9,11 +9,36 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/syscall.h>
+#include <time.h>
 #include <unistd.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static inline void flush_l3_cache() {
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+#endif
+        static const int seed = time(0) % 256;
+        const size_t L3_CACHE_SIZE_KB = 8 * 1024;
+        const size_t BUFFER_SIZE = L3_CACHE_SIZE_KB * 1024 * 2;
+        static char *buffer = static_cast<char *>(malloc(BUFFER_SIZE));
+        volatile char sink = 0;
+        for (size_t i = 0; i < BUFFER_SIZE; i += 64) {
+            buffer[i] = static_cast<char>((seed * i) % 128);
+        }
+        for (size_t i = 0; i < BUFFER_SIZE; i += 64) {
+            sink ^= buffer[i];
+        }
+#ifdef _OPENMP
+    }
+#endif
+}
 
 static inline int get_cpu_id() { return sched_getcpu(); }
 
