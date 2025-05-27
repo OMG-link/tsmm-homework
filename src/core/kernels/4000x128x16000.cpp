@@ -21,7 +21,7 @@ static const int M = 4000;
 static const int K = 128;
 static const int N = 16000;
 
-static const int M_BLK = 4000;
+static const int M_BLK = 1000;
 static const int K_BLK = 128;
 static const int N_BLK = 720;
 
@@ -174,21 +174,21 @@ static inline void _matmul_block(f64 *RESTRICT dst, const f64 *RESTRICT lhs, con
     pack_matrix_lhs(lhs_packed, lhs, m, k, M_BLK, K_BLK, OPK_M_BLK);
     pack_matrix_rhs(rhs_packed, rhs, k, n, K_BLK, N_BLK, OPK_N_BLK);
 
-    static_assert(M_BLK == m);
-    const int m_idx = 0;
-    const int m_block = M_BLK;
 #ifdef _OPENMP
-#pragma omp parallel for collapse(1) schedule(static)
+#pragma omp parallel for collapse(2) schedule(static)
 #endif
     for (int n_idx = 0; n_idx < n; n_idx += N_BLK) {
-        int n_block = min_int(N_BLK, n - n_idx);
-        static_assert(K_BLK == k);
-        const int k_idx = 0;
-        const int k_block = K_BLK;
-        const f64 *lhs_submat = lhs_packed + m_idx * k + k_idx * m_block;
-        const f64 *rhs_submat = rhs_packed + n_idx * k + k_idx * n_block;
-        f64 *dst_submat = dst + m_idx * n + n_idx;
-        _matmul_submat(dst_submat, lhs_submat, rhs_submat, m_block, k_block, n_block, n);
+        for (int m_idx = 0; m_idx < m; m_idx += M_BLK) {
+            int m_block = min_int(M_BLK, m - m_idx);
+            int n_block = min_int(N_BLK, n - n_idx);
+            static_assert(K_BLK == k);
+            const int k_idx = 0;
+            const int k_block = K_BLK;
+            const f64 *lhs_submat = lhs_packed + m_idx * k + k_idx * m_block;
+            const f64 *rhs_submat = rhs_packed + n_idx * k + k_idx * n_block;
+            f64 *dst_submat = dst + m_idx * n + n_idx;
+            _matmul_submat(dst_submat, lhs_submat, rhs_submat, m_block, k_block, n_block, n);
+        }
     }
 
     free(lhs_packed);
